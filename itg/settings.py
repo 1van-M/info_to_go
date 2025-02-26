@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'itg.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'itg',
+        'NAME': 'info_to_go',
         'USER': 'postgres',
         'PASSWORD': 'Ivan28112008',
         'HOST': 'localhost',

@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 
-from .models import Article
+from .models import Article, Tag
 
 
 """
@@ -122,3 +122,11 @@ def get_detail_article_by_title(request, title):
     context = {**info, 'article': article}
 
     return render(request, 'news/article_detail.html', context=context)
+
+
+def get_articles_by_tag(request, tag_id):
+
+    tag = get_object_or_404(Tag, id=tag_id)
+    articles = Article.objects.filter(tags=tag)
+    context = {**info, 'news': articles, 'news_count': len(articles), }
+    return render(request, 'news/catalog.html', context=context)
