@@ -17,4 +17,41 @@
             </div>
         {% endfor %}
     </div>
+       {% if news.paginator.num_pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if news.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ news.previous_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" aria-label="Предыдущая">
+                        <span aria-hidden="true">&laquo; Предыдущая</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">&laquo; Предыдущая</span>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    Страница {{ news.number }} из {{ news.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if news.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ news.next_page_number }}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}" aria-label="Следующая">
+                        <span aria-hidden="true">Следующая &raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-hidden="true">Следующая &raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
 {% endblock %}
+
+

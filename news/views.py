@@ -1,7 +1,8 @@
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 
-from .models import Article, Tag
+from .models import Article, Tag, Category
 
 
 """
@@ -97,7 +98,22 @@ def get_all_news(request):
 
     articles = Article.objects.select_related('category').prefetch_related('tags').order_by(order_by)
 
-    context = {**info, 'news': articles, 'news_count': len(articles), }
+
+    paginator = Paginator(articles, 15)
+    page = request.GET.get('page')
+    paginated_news = paginator.page(paginator.num_pages)
+    try:
+        paginated_news = paginator.page(page)
+    except PageNotAnInteger:
+        # Если параметр page не является числом, выводим первую страницу
+        paginated_news = paginator.page(1)
+    except EmptyPage:
+        # Если страница выходит за пределы доступных, выводим последнюю
+        paginated_news = paginator.page(paginator.num_pages)
+    context = {**info,
+               'news': paginated_news,
+               'news_count': len(articles),
+                   }
 
     return render(request, 'news/catalog.html', context=context)
 
@@ -129,4 +145,38 @@ def get_articles_by_tag(request, tag_id):
     tag = get_object_or_404(Tag, id=tag_id)
     articles = Article.objects.filter(tags=tag)
     context = {**info, 'news': articles, 'news_count': len(articles), }
+    paginator = Paginator(articles, 15)
+    page = request.GET.get('page')
+
+    try:
+        paginated_news = paginator.page(page)
+    except PageNotAnInteger:
+        # Если параметр page не является числом, выводим первую страницу
+        paginated_news = paginator.page(1)
+    except EmptyPage:
+        # Если страница выходит за пределы доступных, выводим последнюю
+        paginated_news = paginator.page(paginator.num_pages)
+    return render(request, 'news/catalog.html', context=context)
+
+
+def get_articles_by_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    articles = Article.objects.filter(category=category)
+    paginator = Paginator(articles, 15)
+    page = request.GET.get('page')
+
+    try:
+        paginated_news = paginator.page(page)
+    except PageNotAnInteger:
+        # Если параметр page не является числом, выводим первую страницу
+        paginated_news = paginator.page(1)
+    except EmptyPage:
+        # Если страница выходит за пределы доступных, выводим последнюю
+        paginated_news = paginator.page(paginator.num_pages)
+    context = {**info,
+               'news': paginated_news,
+               'news_count': len(articles),
+               'current_category': category,
+
+               }
     return render(request, 'news/catalog.html', context=context)
