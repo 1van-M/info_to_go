@@ -12,9 +12,23 @@ from .models import Article, Tag, Category
 """
 # Пример данных для новостей
 
+def get_categories_with_news_count():
+    """
+    Возвращает список категорий с количеством новостей в каждой категории.
+    """
+    categories = Category.objects.all()
+    categories_with_count = []
+    for category in categories:
+        news_count = Article.objects.filter(category=category).count()
+        categories_with_count.append({
+            'category': category,
+            'news_count': news_count,
+        })
+    return categories_with_count
 info = {
     "users_count": 5,
     "news_count": 10,
+    "categories" : Category.objects.all(),
     "menu": [
         {"title": "Главная",
          "url": "/",
@@ -28,17 +42,34 @@ info = {
     ],
 }
 
-
+# def get_categories_with_news_count():
+#     """
+#     Возвращает список категорий с количеством новостей в каждой категории.
+#     """
+#     categories = Category.objects.all()
+#     categories_with_count = []
+#     for category in categories:
+#         news_count = Article.objects.filter(category=category).count()
+#         categories_with_count.append({
+#             'category': category,
+#             'news_count': news_count,
+#         })
+#     return categories_with_count
 def main(request):
     """
     Представление рендерит шаблон main.html
     """
-    return render(request, 'main.html', context=info)
+    categories_with_count = get_categories_with_news_count()
+    context = {**info, 'categories_with_count': categories_with_count}
+    return render(request, 'main.html', context=context)
+   
 
 
 def about(request):
     """Представление рендерит шаблон about.html"""
-    return render(request, 'about.html', context=info)
+    categories_with_count = get_categories_with_news_count()
+    context = {**info, 'categories_with_count': categories_with_count }
+    return render(request, 'about.html', context=context)
 
 
 def catalog(request):
@@ -110,9 +141,11 @@ def get_all_news(request):
     except EmptyPage:
         # Если страница выходит за пределы доступных, выводим последнюю
         paginated_news = paginator.page(paginator.num_pages)
+    categories_with_count = get_categories_with_news_count()
     context = {**info,
                'news': paginated_news,
                'news_count': len(articles),
+
                    }
 
     return render(request, 'news/catalog.html', context=context)
@@ -180,3 +213,4 @@ def get_articles_by_category(request, category_id):
 
                }
     return render(request, 'news/catalog.html', context=context)
+
