@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-from django.db.models import F
+from django.db.models import F, Q
 from .models import Article, Tag, Category
 
 
@@ -214,5 +214,32 @@ def get_articles_by_category(request, category_id):
                'current_category': category,
 
                }
+    return render(request, 'news/catalog.html', context=context)
+
+def search_news(request):
+    query = request.GET.get('q')
+    articles = Article.objects.all()
+
+    if query:
+        # Создаем сложный запрос с использованием Q для поиска в title и content
+        articles = articles.filter(
+            Q(title__icontains=query) |  # Поиск в заголовке (без учета регистра)
+            Q(content__icontains=query)  # Поиск в содержимом (без учета регистра)
+        ).distinct()
+    paginator = Paginator(articles, 15)
+    page = request.GET.get('page')
+
+    try:
+        paginated_news = paginator.page(page)
+    except PageNotAnInteger:
+        # Если параметр page не является числом, выводим первую страницу
+        paginated_news = paginator.page(1)
+    except EmptyPage:
+        # Если страница выходит за пределы доступных, выводим последнюю
+        paginated_news = paginator.page(paginator.num_pages)
+    context = {
+        'news': paginated_news,
+        'query': query
+    }
     return render(request, 'news/catalog.html', context=context)
 
