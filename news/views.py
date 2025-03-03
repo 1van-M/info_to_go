@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
-
+from django.db.models import F
 from .models import Article, Tag, Category
 
 
@@ -155,6 +155,7 @@ def get_detail_article_by_id(request, article_id):
     """
     Возвращает детальную информацию по новости для представления
     """
+    Article.objects.filter(pk=article_id).update(views=F('views') + 1)
     article = get_object_or_404(Article, id=article_id)
 
     context = {**info, 'article': article}
@@ -166,6 +167,7 @@ def get_detail_article_by_title(request, title):
     """
     Возвращает детальную информацию по новости для представления
     """
+
     article = get_object_or_404(Article, slug=title)
 
     context = {**info, 'article': article}
