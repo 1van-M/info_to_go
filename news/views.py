@@ -1,9 +1,8 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import F, Q
-from .models import Article, Tag, Category
-
+from .models import Article, Tag, Category, Like
 
 """
 Информация в шаблоны будет браться из базы данных
@@ -145,6 +144,7 @@ def get_all_news(request):
     context = {**info,
                'news': paginated_news,
                'news_count': len(articles),
+               'user_ip': request.META.get('REMOTE_ADDR'),
 
                    }
 
@@ -179,7 +179,7 @@ def get_articles_by_tag(request, tag_id):
 
     tag = get_object_or_404(Tag, id=tag_id)
     articles = Article.objects.filter(tags=tag)
-    context = {**info, 'news': articles, 'news_count': len(articles), }
+    context = {**info, 'news': articles, 'news_count': len(articles), 'user_ip': request.META.get('REMOTE_ADDR'),}
     paginator = Paginator(articles, 15)
     page = request.GET.get('page')
 
@@ -212,6 +212,7 @@ def get_articles_by_category(request, category_id):
                'news': paginated_news,
                'news_count': len(articles),
                'current_category': category,
+               'user_ip': request.META.get('REMOTE_ADDR'),
 
                }
     return render(request, 'news/catalog.html', context=context)
@@ -239,7 +240,18 @@ def search_news(request):
         paginated_news = paginator.page(paginator.num_pages)
     context = {
         'news': paginated_news,
-        'query': query
+        'query': query,
+        'user_ip': request.META.get('REMOTE_ADDR'),
     }
     return render(request, 'news/catalog.html', context=context)
+
+def like_toggle(request, article_id):
+    article = get_object_or_404(Article, id=article_id)
+    ip_address = request.META.get('REMOTE_ADDR')
+    if Like.objects.filter(article_id=article_id, ip_address=ip_address).exists():
+        Like.objects.filter(article_id=article_id, ip_address=ip_address).delete()
+    else:
+        Like.objects.create(article_id=article_id, ip_address=ip_address)
+
+    return redirect("news:catalog")
 
