@@ -18,9 +18,9 @@
 		  {% csrf_token %}
 		  <button type="submit" class="btn btn-primary">
 		    {% if article|has_liked:user_ip %}
-		      Убрать лайк
+		      ❤️
 		    {% else %}
-		      Лайк
+		      🤍
 		    {% endif %}
 		  </button>
 		</form>

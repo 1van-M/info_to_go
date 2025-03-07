@@ -158,7 +158,7 @@ def get_detail_article_by_id(request, article_id):
     Article.objects.filter(pk=article_id).update(views=F('views') + 1)
     article = get_object_or_404(Article, id=article_id)
 
-    context = {**info, 'article': article}
+    context = {**info, 'article': article, 'user_ip': request.META.get('REMOTE_ADDR'),}
 
     return render(request, 'news/article_detail.html', context=context)
 
@@ -170,7 +170,7 @@ def get_detail_article_by_title(request, title):
 
     article = get_object_or_404(Article, slug=title)
 
-    context = {**info, 'article': article}
+    context = {**info, 'article': article, 'user_ip': request.META.get('REMOTE_ADDR'),}
 
     return render(request, 'news/article_detail.html', context=context)
 
