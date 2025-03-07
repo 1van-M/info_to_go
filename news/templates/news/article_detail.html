@@ -13,6 +13,7 @@
             <p class="card-text">{{ article.id_author }}</p>
             <p class="card-text">{{ article.publication_date }}</p>
             <p class="card-text">Просмотры: {{ article.views }}</p>
+            <p class="card-text">Лайки: {{ article.likes.count }}</p>
         <form method="POST" action="{% url 'news:like_toggle' article.id %}">
 		  {% csrf_token %}
 		  <button type="submit" class="btn btn-primary">
