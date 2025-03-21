@@ -41,19 +41,6 @@ class Tag(models.Model):
         verbose_name_plural = 'Теги'  # множественное число для отображения в админке
 
 
-class Like(models.Model):
-    ip_address = models.GenericIPAddressField()
-    article = models.ForeignKey("Article", on_delete=models.CASCADE, related_name='likes')
-
-    class Meta:
-        db_table = 'Likes'
-        verbose_name = "Лайк"
-        verbose_name_plural = "Лайки"
-        unique_together = ('article', 'ip_address')
-
-    def __str__(self):
-        return f"{self.ip_address} likes {self.article.title}"
-
 
 class Article(models.Model):
     class Status(models.IntegerChoices):
@@ -102,4 +89,26 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Like(models.Model):
+    ip_address = models.GenericIPAddressField()
+    article = models.ForeignKey("Article", on_delete=models.CASCADE, related_name='likes')
+
+    class Meta:
+        db_table = 'Likes'
+        verbose_name = "Лайк"
+        verbose_name_plural = "Лайки"
+        unique_together = ('article', 'ip_address')
+
+    def __str__(self):
+        return f"{self.ip_address} likes {self.article.title}"
+
+
+class Favorite(models.Model):
+    article = models.ForeignKey("Article", on_delete=models.CASCADE, related_name='favorites')
+    ip_address = models.GenericIPAddressField()
+
+    def __str__(self):
+        return f'Favorite by {self.ip_address} on {self.article}'
 

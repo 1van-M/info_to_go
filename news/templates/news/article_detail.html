@@ -24,7 +24,18 @@
 		    {% endif %}
 		  </button>
 		</form>
+        <form method="POST" action="{% url 'news:toggle_favorite' article.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-link p-0 text-black text-decoration-none">
+                        {% if article|has_favorited:user_ip %}
+                            <i class="bi bi-star-fill"></i>
+                        {% else %}
+                            <i class="bi bi-star"></i>
+                        {% endif %}
+                    </button>
+                </form>
             <p class="card-text">{{ article.favorites_count }}</p>
         </div>
+
     </div>
 {% endblock %}

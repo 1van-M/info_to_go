@@ -1,8 +1,10 @@
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import F, Q
-from .models import Article, Tag, Category, Like
+
+from .forms import ArticleForm
+from .models import Article, Tag, Category, Like, Favorite
 
 """
 Информация в шаблоны будет браться из базы данных
@@ -38,6 +40,9 @@ info = {
         {"title": "Каталог",
          "url": "/news/catalog/",
          "url_name": "news:catalog"},
+        {"title": "Избранное",
+         "url": "/news/favorites/",
+         "url_name": "news:favorites"},
     ],
 }
 
@@ -253,5 +258,43 @@ def like_toggle(request, article_id):
     else:
         Like.objects.create(article_id=article_id, ip_address=ip_address)
 
+
     return redirect("news:catalog")
 
+
+def favorites(request):
+    ip_address = request.META.get('REMOTE_ADDR')
+    favorite_articles = Article.objects.filter(favorites__ip_address=ip_address)
+    context = {**info, 'articles': favorite_articles, 'news_count': len(favorite_articles), 'page_obj': favorite_articles, 'user_ip': request.META.get('REMOTE_ADDR'), }
+    return render(request, 'news/catalog.html', context=context)
+
+
+def toggle_favorite(request, article_id):
+    article = get_object_or_404(Article, pk=article_id)
+    ip_address = request.META.get('REMOTE_ADDR')
+    favorite, created = Favorite.objects.get_or_create(article=article, ip_address=ip_address)
+    if not created:
+        favorite.delete()
+    return redirect('news:detail_article_by_id', article_id=article_id)
+
+
+def add_article(request):
+    if request.method == 'POST':
+        form = ArticleForm(request.POST)
+        if form.is_valid():
+            # собираем данные формы
+            title = form.cleaned_data['title']
+            content = form.cleaned_data['content']
+            category = form.cleaned_data['category']
+            # сохраняем статью в базу данных
+            article = Article(title=title, content=content, category=category)
+            article.save()
+            # получаем id созданной статьи
+            article_id = article.pk
+            return HttpResponseRedirect(f'/news/catalog/{article_id}')
+    else:
+        form = ArticleForm()
+
+    context = {'form': form, 'menu': info['menu']}
+
+    return render(request, 'news/add_article.html', context=context)
